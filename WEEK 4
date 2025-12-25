@@ -1,0 +1,111 @@
+/* Create Database */
+CREATE DATABASE EmployeeDB;
+USE EmployeeDB;
+
+/* i. Create Tables with Primary and Foreign Keys */
+
+CREATE TABLE DEPARTMENT (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(30),
+    dept_location VARCHAR(30)
+);
+
+CREATE TABLE EMPLOYEE (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(30),
+    job_role VARCHAR(30),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES DEPARTMENT(dept_id)
+);
+
+CREATE TABLE PROJECT (
+    proj_id INT PRIMARY KEY,
+    proj_name VARCHAR(30),
+    proj_location VARCHAR(30)
+);
+
+CREATE TABLE WORKS_ON (
+    emp_id INT,
+    proj_id INT,
+    PRIMARY KEY (emp_id, proj_id),
+    FOREIGN KEY (emp_id) REFERENCES EMPLOYEE(emp_id),
+    FOREIGN KEY (proj_id) REFERENCES PROJECT(proj_id)
+);
+
+CREATE TABLE INCENTIVE (
+    emp_id INT PRIMARY KEY,
+    incentive_amount INT,
+    FOREIGN KEY (emp_id) REFERENCES EMPLOYEE(emp_id)
+);
+
+/* ii. Insert more than five tuples into each table */
+
+INSERT INTO DEPARTMENT VALUES
+(1,'HR','Bengaluru'),
+(2,'IT','Hyderabad'),
+(3,'Finance','Mysuru'),
+(4,'Sales','Bengaluru'),
+(5,'Support','Chennai'),
+(6,'R&D','Hyderabad');
+
+INSERT INTO EMPLOYEE VALUES
+(101,'Ramesh','Manager',1),
+(102,'Suresh','Developer',2),
+(103,'Mahesh','Analyst',3),
+(104,'Anil','Sales Exec',4),
+(105,'Kiran','Support Engg',5),
+(106,'Naveen','Developer',2);
+
+INSERT INTO PROJECT VALUES
+(201,'Payroll','Bengaluru'),
+(202,'Ecommerce','Hyderabad'),
+(203,'Audit','Mysuru'),
+(204,'CRM','Bengaluru'),
+(205,'Helpdesk','Chennai'),
+(206,'AI Tool','Hyderabad');
+
+INSERT INTO WORKS_ON VALUES
+(101,201),
+(102,202),
+(103,203),
+(104,204),
+(105,205),
+(106,206);
+
+INSERT INTO INCENTIVE VALUES
+(101,5000),
+(102,7000),
+(104,4000),
+(106,6000);
+
+/* iii. Retrieve employee numbers working on projects
+       located in Bengaluru, Hyderabad, or Mysuru */
+
+SELECT DISTINCT E.emp_id
+FROM EMPLOYEE E
+JOIN WORKS_ON W ON E.emp_id = W.emp_id
+JOIN PROJECT P ON W.proj_id = P.proj_id
+WHERE P.proj_location IN ('Bengaluru','Hyderabad','Mysuru');
+
+/* iv. Get Employee IDs of employees who didn’t receive incentives */
+
+SELECT emp_id
+FROM EMPLOYEE
+WHERE emp_id NOT IN (
+    SELECT emp_id FROM INCENTIVE
+);
+
+/* v. Employees whose project location is SAME as department location */
+
+SELECT 
+    E.emp_name,
+    E.emp_id,
+    D.dept_name,
+    E.job_role,
+    D.dept_location,
+    P.proj_location
+FROM EMPLOYEE E
+JOIN DEPARTMENT D ON E.dept_id = D.dept_id
+JOIN WORKS_ON W ON E.emp_id = W.emp_id
+JOIN PROJECT P ON W.proj_id = P.proj_id
+WHERE D.dept_location = P.proj_location;
