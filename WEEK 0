@@ -1,0 +1,111 @@
+
+  /* PROGRAM 1 : INSURANCE DATABASE */
+   
+
+/* i. Create Database */
+CREATE DATABASE InsuranceDB;
+USE InsuranceDB;
+
+/* i. Create Tables with Primary & Foreign Keys */
+
+CREATE TABLE PERSON (
+    driver_id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(100)
+);
+
+CREATE TABLE CAR (
+    reg_num VARCHAR(15) PRIMARY KEY,
+    model VARCHAR(30),
+    year INT
+);
+
+CREATE TABLE ACCIDENT (
+    report_num INT PRIMARY KEY,
+    accident_date DATE,
+    location VARCHAR(50)
+);
+
+CREATE TABLE OWNS (
+    driver_id VARCHAR(10),
+    reg_num VARCHAR(15),
+    PRIMARY KEY (driver_id, reg_num),
+    FOREIGN KEY (driver_id) REFERENCES PERSON(driver_id),
+    FOREIGN KEY (reg_num) REFERENCES CAR(reg_num)
+);
+
+CREATE TABLE PARTICIPATED (
+    driver_id VARCHAR(10),
+    reg_num VARCHAR(15),
+    report_num INT,
+    damage_amount INT,
+    PRIMARY KEY (driver_id, reg_num, report_num),
+    FOREIGN KEY (driver_id) REFERENCES PERSON(driver_id),
+    FOREIGN KEY (reg_num) REFERENCES CAR(reg_num),
+    FOREIGN KEY (report_num) REFERENCES ACCIDENT(report_num)
+);
+
+/* ii. Insert at least five tuples into each table */
+
+INSERT INTO PERSON VALUES
+('D001', 'Ramesh', 'Bangalore'),
+('D002', 'Suresh', 'Mysore'),
+('D003', 'Mahesh', 'Hubli'),
+('D004', 'Anil', 'Mangalore'),
+('D005', 'Kiran', 'Belgaum');
+
+INSERT INTO CAR VALUES
+('KA053408', 'Honda City', 2019),
+('KA012345', 'Swift', 2018),
+('KA067890', 'Creta', 2020),
+('KA098765', 'i20', 2017),
+('KA045678', 'Verna', 2021);
+
+INSERT INTO ACCIDENT VALUES
+(10, '2023-01-15', 'Bangalore'),
+(11, '2023-03-20', 'Mysore'),
+(12, '2023-05-10', 'Hubli'),
+(13, '2023-07-05', 'Mangalore'),
+(14, '2023-08-18', 'Belgaum');
+
+INSERT INTO OWNS VALUES
+('D001', 'KA053408'),
+('D002', 'KA012345'),
+('D003', 'KA067890'),
+('D004', 'KA098765'),
+('D005', 'KA045678');
+
+INSERT INTO PARTICIPATED VALUES
+('D001', 'KA053408', 12, 20000),
+('D002', 'KA012345', 10, 15000),
+('D003', 'KA067890', 11, 30000),
+('D004', 'KA098765', 13, 18000),
+('D005', 'KA045678', 14, 40000);
+
+/* iii. Display Accident date and location */
+
+SELECT accident_date, location
+FROM ACCIDENT;
+
+/* iv. Update damage amount to 25000 for specific reg_num and report_num */
+
+UPDATE PARTICIPATED
+SET damage_amount = 25000
+WHERE reg_num = 'KA053408'
+AND report_num = 12;
+
+/* v. Add a new accident */
+
+INSERT INTO ACCIDENT VALUES
+(15, '2023-10-01', 'Tumkur');
+
+/* vi. Display Accident date and location */
+
+SELECT accident_date, location
+FROM ACCIDENT;
+
+/* vii. Display driver id with damage amount >= Rs.25000 */
+
+SELECT driver_id
+FROM PARTICIPATED
+WHERE damage_amount >= 25000;
