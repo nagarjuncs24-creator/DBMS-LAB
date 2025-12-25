@@ -1,0 +1,128 @@
+/*PROGRAM : SUPPLIER DATABASE*/
+
+
+/* Create Database */
+CREATE DATABASE SupplierDB;
+USE SupplierDB;
+
+/* i. Create Tables with Primary and Foreign Keys */
+
+CREATE TABLE SUPPLIER (
+    sid INT PRIMARY KEY,
+    sname VARCHAR(40),
+    city VARCHAR(30)
+);
+
+CREATE TABLE PART (
+    pid INT PRIMARY KEY,
+    pname VARCHAR(40),
+    color VARCHAR(20)
+);
+
+CREATE TABLE CATALOG (
+    sid INT,
+    pid INT,
+    cost REAL,
+    PRIMARY KEY (sid, pid),
+    FOREIGN KEY (sid) REFERENCES SUPPLIER(sid),
+    FOREIGN KEY (pid) REFERENCES PART(pid)
+);
+
+/* ii. Insert appropriate records */
+
+INSERT INTO SUPPLIER VALUES
+(1,'Acme Widget Suppliers','Bangalore'),
+(2,'Global Parts Ltd','Hyderabad'),
+(3,'Universal Supplies','Chennai'),
+(4,'Prime Components','Mumbai'),
+(5,'Metro Traders','Delhi');
+
+INSERT INTO PART VALUES
+(101,'Bolt','Red'),
+(102,'Nut','Green'),
+(103,'Screw','Red'),
+(104,'Washer','Blue'),
+(105,'Clamp','Red');
+
+INSERT INTO CATALOG VALUES
+(1,101,50),
+(1,102,40),
+(2,101,55),
+(2,103,70),
+(3,101,60),
+(3,102,45),
+(3,103,75),
+(3,104,30),
+(4,101,65),
+(4,102,50),
+(4,103,80),
+(4,104,35),
+(4,105,90),
+(5,101,58),
+(5,105,95);
+
+/* iii. Find pnames of parts for which there is some supplier */
+
+SELECT DISTINCT P.pname
+FROM PART P
+JOIN CATALOG C ON P.pid = C.pid;
+
+/* iv. Find snames of suppliers who supply EVERY part */
+
+SELECT S.sname
+FROM SUPPLIER S
+JOIN CATALOG C ON S.sid = C.sid
+GROUP BY S.sid, S.sname
+HAVING COUNT(DISTINCT C.pid) =
+       (SELECT COUNT(*) FROM PART);
+
+/* v. Find snames of suppliers who supply EVERY RED part */
+
+SELECT S.sname
+FROM SUPPLIER S
+JOIN CATALOG C ON S.sid = C.sid
+JOIN PART P ON C.pid = P.pid
+WHERE P.color = 'Red'
+GROUP BY S.sid, S.sname
+HAVING COUNT(DISTINCT P.pid) =
+       (SELECT COUNT(*) FROM PART WHERE color = 'Red');
+
+/* vi. Find pnames of parts supplied by Acme Widget Suppliers
+       and by no one else */
+
+SELECT P.pname
+FROM PART P
+JOIN CATALOG C ON P.pid = C.pid
+JOIN SUPPLIER S ON C.sid = S.sid
+WHERE S.sname = 'Acme Widget Suppliers'
+AND P.pid NOT IN (
+    SELECT pid
+    FROM CATALOG C2
+    JOIN SUPPLIER S2 ON C2.sid = S2.sid
+    WHERE S2.sname <> 'Acme Widget Suppliers'
+);
+
+/* vii. Find sids of suppliers who charge more for some part
+        than the average cost of that part */
+
+SELECT DISTINCT C.sid
+FROM CATALOG C
+WHERE C.cost >
+(
+    SELECT AVG(C2.cost)
+    FROM CATALOG C2
+    WHERE C2.pid = C.pid
+);
+
+/* viii. For each part, find the sname of the supplier
+         who charges the most for that part */
+
+SELECT P.pname, S.sname
+FROM PART P
+JOIN CATALOG C ON P.pid = C.pid
+JOIN SUPPLIER S ON C.sid = S.sid
+WHERE C.cost = (
+    SELECT MAX(cost)
+    FROM CATALOG
+    WHERE pid = P.pid
+);
