@@ -1,0 +1,71 @@
+/*  PROGRAM 4 : MORE QUERIES ON BANK DATABASE */
+
+USE BankDB;
+
+/* i. Find customers who have an account at ALL branches
+      located in a specific city (Example: Delhi) */
+
+SELECT D.customer_name
+FROM Depositer D
+JOIN BankAccount B ON D.accno = B.accno
+JOIN Branch BR ON B.branch_name = BR.branch_name
+WHERE BR.branch_city = 'Delhi'
+GROUP BY D.customer_name
+HAVING COUNT(DISTINCT BR.branch_name) =
+      (SELECT COUNT(*) FROM Branch WHERE branch_city = 'Delhi');
+
+/* ii. Find customers who have a loan but do NOT have an account */
+
+SELECT DISTINCT L.loan_number, BC.customer_name
+FROM Loan L, Branch BR, BankCustomer BC
+WHERE L.branch_name = BR.branch_name
+AND BC.customer_name NOT IN (
+    SELECT customer_name FROM Depositer
+);
+
+/* (Standard interpretation used in labs: loan customers not depositers) */
+
+SELECT customer_name
+FROM BankCustomer
+WHERE customer_name NOT IN (
+    SELECT customer_name FROM Depositer
+);
+
+/* iii. Customers who have BOTH an account and a loan
+       at the Bangalore branch */
+
+SELECT DISTINCT D.customer_name
+FROM Depositer D
+JOIN BankAccount B ON D.accno = B.accno
+JOIN Loan L ON B.branch_name = L.branch_name
+JOIN Branch BR ON B.branch_name = BR.branch_name
+WHERE BR.branch_city = 'Bangalore';
+
+/* iv. Names of branches whose assets are greater than
+      ALL branches located in Bangalore */
+
+SELECT branch_name
+FROM Branch
+WHERE assets >
+      (SELECT MAX(assets)
+       FROM Branch
+       WHERE branch_city = 'Bangalore');
+
+/* v. Delete all account tuples at branches located
+      in a specific city (Example: Bombay) */
+
+DELETE FROM BankAccount
+WHERE branch_name IN (
+    SELECT branch_name
+    FROM Branch
+    WHERE branch_city = 'Bombay'
+);
+
+/* vi. Update the balance of ALL accounts by 5% */
+
+UPDATE BankAccount
+SET balance = balance * 1.05;
+
+/* Display updated account balances */
+
+SELECT * FROM BankAccount;
