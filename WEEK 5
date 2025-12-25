@@ -1,0 +1,128 @@
+/*  PROGRAM 6 : MORE QUERIES ON EMPLOYEE DATABASE */
+
+/* Create Database */
+CREATE DATABASE EmployeeDB6;
+USE EmployeeDB6;
+
+/* i. Create Tables */
+
+CREATE TABLE DEPARTMENT (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(30)
+);
+
+CREATE TABLE EMPLOYEE (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(30),
+    job_role VARCHAR(30),
+    salary INT,
+    manager_id INT,
+    dept_id INT,
+    FOREIGN KEY (manager_id) REFERENCES EMPLOYEE(emp_id),
+    FOREIGN KEY (dept_id) REFERENCES DEPARTMENT(dept_id)
+);
+
+CREATE TABLE INCENTIVE (
+    incentive_id INT PRIMARY KEY,
+    emp_id INT,
+    incentive_amount INT,
+    incentive_date DATE,
+    FOREIGN KEY (emp_id) REFERENCES EMPLOYEE(emp_id)
+);
+
+/* ii. Insert more than five tuples */
+
+/* Departments */
+INSERT INTO DEPARTMENT VALUES
+(1,'HR'),
+(2,'IT'),
+(3,'Finance'),
+(4,'Sales'),
+(5,'Support');
+
+/* Employees (Managers have NULL manager_id) */
+INSERT INTO EMPLOYEE VALUES
+(101,'Ramesh','Manager',90000,NULL,1),
+(102,'Suresh','Manager',95000,NULL,2),
+(103,'Mahesh','Manager',92000,NULL,3),
+(104,'Anil','Executive',50000,101,1),
+(105,'Kiran','Executive',45000,101,1),
+(106,'Naveen','Developer',60000,102,2),
+(107,'Arjun','Developer',58000,102,2),
+(108,'Rahul','Accountant',52000,103,3);
+
+/* Incentives */
+INSERT INTO INCENTIVE VALUES
+(1,104,5000,'2019-01-10'),
+(2,105,7000,'2019-01-15'),
+(3,106,9000,'2019-01-20'),
+(4,107,8000,'2019-01-25'),
+(5,108,6000,'2019-01-28'),
+(6,104,4000,'2019-02-10');
+
+/* iii. List names of managers with maximum employees */
+
+SELECT E.emp_name
+FROM EMPLOYEE E
+JOIN EMPLOYEE S ON E.emp_id = S.manager_id
+GROUP BY E.emp_id, E.emp_name
+HAVING COUNT(*) = (
+    SELECT MAX(cnt)
+    FROM (
+        SELECT COUNT(*) AS cnt
+        FROM EMPLOYEE
+        WHERE manager_id IS NOT NULL
+        GROUP BY manager_id
+    ) AS temp
+);
+
+/* iv. Managers whose salary is more than
+       average salary of his/her employees */
+
+SELECT M.emp_name
+FROM EMPLOYEE M
+WHERE M.salary >
+(
+    SELECT AVG(E.salary)
+    FROM EMPLOYEE E
+    WHERE E.manager_id = M.emp_id
+);
+
+/* v. Find the second top level managers of each department */
+
+SELECT emp_name, dept_id
+FROM EMPLOYEE E1
+WHERE salary = (
+    SELECT MAX(salary)
+    FROM EMPLOYEE E2
+    WHERE E2.dept_id = E1.dept_id
+    AND salary < (
+        SELECT MAX(salary)
+        FROM EMPLOYEE
+        WHERE dept_id = E1.dept_id
+    )
+);
+
+/* vi. Employee details who got second maximum incentive
+       in January 2019 */
+
+SELECT E.*
+FROM EMPLOYEE E
+JOIN INCENTIVE I ON E.emp_id = I.emp_id
+WHERE I.incentive_amount = (
+    SELECT MAX(incentive_amount)
+    FROM INCENTIVE
+    WHERE incentive_date BETWEEN '2019-01-01' AND '2019-01-31'
+    AND incentive_amount <
+        (SELECT MAX(incentive_amount)
+         FROM INCENTIVE
+         WHERE incentive_date BETWEEN '2019-01-01' AND '2019-01-31')
+);
+
+/* vii. Employees working in the same department
+        where their manager is working */
+
+SELECT E.emp_id, E.emp_name
+FROM EMPLOYEE E
+JOIN EMPLOYEE M ON E.manager_id = M.emp_id
+WHERE E.dept_id = M.dept_id;
