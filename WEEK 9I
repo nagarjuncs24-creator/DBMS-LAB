@@ -1,0 +1,55 @@
+/*  PROGRAM 9 : NoSQL CUSTOMER DATABASE (MongoDB)*/
+
+/* i. Create Database and Collection */
+
+use CustomerDB
+
+/* ii. Insert at least 5 records */
+
+db.Customers.insertMany([
+  { cust_id: 1, acc_bal: 500,  acc_type: "Z" },
+  { cust_id: 1, acc_bal: 800,  acc_type: "Z" },
+  { cust_id: 2, acc_bal: 300,  acc_type: "Z" },
+  { cust_id: 2, acc_bal: 1200, acc_type: "Y" },
+  { cust_id: 3, acc_bal: 1500, acc_type: "Z" },
+  { cust_id: 3, acc_bal: 200,  acc_type: "Z" },
+  { cust_id: 4, acc_bal: 1000, acc_type: "Z" },
+  { cust_id: 5, acc_bal: 2500, acc_type: "Y" }
+])
+
+/* iii. Display records whose TOTAL account balance > 1200
+        of account type 'Z' for each customer_id */
+
+db.Customers.aggregate([
+  { $match: { acc_type: "Z" } },
+  { $group: {
+      _id: "$cust_id",
+      totalBalance: { $sum: "$acc_bal" }
+    }
+  },
+  { $match: { totalBalance: { $gt: 1200 } } }
+])
+
+/* iv. Find Minimum and Maximum account balance for each customer_id */
+
+db.Customers.aggregate([
+  { $group: {
+      _id: "$cust_id",
+      minBalance: { $min: "$acc_bal" },
+      maxBalance: { $max: "$acc_bal" }
+    }
+  }
+])
+
+/* v. Export the collection into local file system */
+
+mongoexport --db CustomerDB --collection Customers --out customers_backup.json
+
+/* vi. Drop the table (collection) */
+
+db.Customers.drop()
+
+/* vii. Import a CSV dataset from local file system */
+
+
+mongoimport --db CustomerDB --collection Customers --type csv --headerline --file customers.csv
