@@ -1,0 +1,43 @@
+/*    PROGRAM 8 : NoSQL STUDENT DATABASE (MONGODB)  */
+
+/* i. Create Database "Student" and Collection */
+
+use Student
+
+/* ii. Insert appropriate values */
+
+db.student.insertMany([
+  { rollno: 1, name: "ABC", age: 20, contactNo: "9876543210", emailId: "abc1@gmail.com" },
+  { rollno: 2, name: "DEF", age: 21, contactNo: "9876543211", emailId: "def@gmail.com" },
+  { rollno: 3, name: "GHI", age: 19, contactNo: "9876543212", emailId: "ghi@gmail.com" },
+  { rollno: 10, name: "JKL", age: 22, contactNo: "9876543213", emailId: "oldmail@gmail.com" },
+  { rollno: 11, name: "ABC", age: 20, contactNo: "9876543214", emailId: "abc11@gmail.com" },
+  { rollno: 12, name: "MNO", age: 23, contactNo: "9876543215", emailId: "mno@gmail.com" }
+])
+
+/* iii. Update Email-Id of student with rollno 10 */
+
+db.student.updateOne(
+  { rollno: 10 },
+  { $set: { emailId: "newmail10@gmail.com" } }
+)
+
+/* iv. Replace student name from "ABC" to "FEM" of rollno 11 */
+
+db.student.updateOne(
+  { rollno: 11, name: "ABC" },
+  { $set: { name: "FEM" } }
+)
+
+/* v. Export the collection into local file system */
+
+mongoexport --db Student --collection student --out student_backup.json
+
+/* vi. Drop the table (collection) */
+
+db.student.drop()
+
+/* vii. Import a CSV dataset from local file system */
+
+
+mongoimport --db Student --collection student --type csv --headerline --file student.csv
