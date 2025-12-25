@@ -1,0 +1,108 @@
+/*  PROGRAM 3 : BANK DATABASE */
+
+/* Create Database */
+CREATE DATABASE BankDB;
+USE BankDB;
+
+/* i. Create Tables with Primary & Foreign Keys */
+
+CREATE TABLE Branch (
+    branch_name VARCHAR(50) PRIMARY KEY,
+    branch_city VARCHAR(50),
+    assets REAL
+);
+
+CREATE TABLE BankAccount (
+    accno INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    balance REAL,
+    FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+CREATE TABLE BankCustomer (
+    customer_name VARCHAR(50) PRIMARY KEY,
+    customer_street VARCHAR(50),
+    customer_city VARCHAR(50)
+);
+
+CREATE TABLE Depositer (
+    customer_name VARCHAR(50),
+    accno INT,
+    PRIMARY KEY (customer_name, accno),
+    FOREIGN KEY (customer_name) REFERENCES BankCustomer(customer_name),
+    FOREIGN KEY (accno) REFERENCES BankAccount(accno)
+);
+
+CREATE TABLE Loan (
+    loan_number INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    amount REAL,
+    FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+/* ii. Insert at least five tuples into each table */
+
+INSERT INTO Branch VALUES
+('SBI_ResidencyRoad','Bangalore',50000000),
+('SBI_MGroad','Bangalore',35000000),
+('SBI_Mysore','Mysore',25000000),
+('SBI_Hubli','Hubli',20000000),
+('SBI_Mangalore','Mangalore',30000000);
+
+INSERT INTO BankAccount VALUES
+(101,'SBI_ResidencyRoad',150000),
+(102,'SBI_ResidencyRoad',250000),
+(103,'SBI_MGroad',100000),
+(104,'SBI_Mysore',180000),
+(105,'SBI_Hubli',120000);
+
+INSERT INTO BankCustomer VALUES
+('Ramesh','MG Road','Bangalore'),
+('Suresh','KR Circle','Mysore'),
+('Mahesh','Vidyanagar','Hubli'),
+('Anil','Hampankatta','Mangalore'),
+('Kiran','BTM Layout','Bangalore');
+
+INSERT INTO Depositer VALUES
+('Ramesh',101),
+('Ramesh',102),
+('Suresh',103),
+('Mahesh',104),
+('Anil',105);
+
+INSERT INTO Loan VALUES
+(201,'SBI_ResidencyRoad',500000),
+(202,'SBI_ResidencyRoad',300000),
+(203,'SBI_MGroad',400000),
+(204,'SBI_Mysore',250000),
+(205,'SBI_Hubli',350000);
+
+/* iii. Display branch name and assets in lakhs and rename column */
+
+SELECT 
+    branch_name,
+    assets/100000 AS `assets in lakhs`
+FROM Branch;
+
+/* iv. Customers having at least two accounts at the same branch 
+       (example: SBI_ResidencyRoad) */
+
+SELECT D.customer_name
+FROM Depositer D, BankAccount B
+WHERE D.accno = B.accno
+AND B.branch_name = 'SBI_ResidencyRoad'
+GROUP BY D.customer_name
+HAVING COUNT(*) >= 2;
+
+/* v. Create a view showing each branch and total loan amount */
+
+CREATE VIEW Branch_Loan_Sum AS
+SELECT 
+    branch_name,
+    SUM(amount) AS total_loan_amount
+FROM Loan
+GROUP BY branch_name;
+
+/* Display the view */
+
+SELECT * FROM Branch_Loan_Sum;
