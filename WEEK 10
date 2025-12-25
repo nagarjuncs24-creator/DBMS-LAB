@@ -1,0 +1,43 @@
+/*  PROGRAM 10 : NoSQL RESTAURANT DATABASE (MongoDB)*/
+
+/* i. Use / Create Restaurant Database */
+
+use RestaurantDB
+
+/* Sample Restaurant Collection Data */
+
+db.Restaurant.insertMany([
+  { restaurant_id: 101, name: "Spice Hub", town: "Bengaluru", cuisine: "Indian", score: 12 },
+  { restaurant_id: 102, name: "Food Fiesta", town: "Mysuru", cuisine: "Chinese", score: 8 },
+  { restaurant_id: 103, name: "Taste Town", town: "Hyderabad", cuisine: "Italian", score: 15 },
+  { restaurant_id: 104, name: "Curry Leaf", town: "Bengaluru", cuisine: "Indian", score: 10 },
+  { restaurant_id: 105, name: "Urban Eats", town: "Chennai", cuisine: "Continental", score: 9 }
+])
+
+/* ii. Display all documents in Restaurant collection */
+
+db.Restaurant.find()
+
+/* iii. Arrange restaurant names in DESCENDING order
+        along with all columns */
+
+db.Restaurant.find().sort({ name: -1 })
+
+/* iv. Find restaurant id, name, town, cuisine
+        whose score is NOT more than 10 */
+
+db.Restaurant.find(
+  { score: { $lte: 10 } },
+  { _id: 0, restaurant_id: 1, name: 1, town: 1, cuisine: 1 }
+)
+
+/* v. Find average score for each restaurant */
+
+db.Restaurant.aggregate([
+  {
+    $group: {
+      _id: "$name",
+      avgScore: { $avg: "$score" }
+    }
+  }
+])
